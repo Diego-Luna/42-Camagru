@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  php-fpm:
+    build:
+      context: ./php
+    volumes:
+      - ../:/var/www/camagru
+    networks:
+      - camagru-network
+    environment:
+      - PHP_INI_SCAN_DIR=/usr/local/etc/php/custom.d
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ../:/var/www/camagru
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php-fpm
+    networks:
+      - camagru-network
+
+networks:
+  camagru-network:
+    driver: bridge
