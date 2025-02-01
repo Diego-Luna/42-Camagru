@@ -25,5 +25,13 @@ class SessionController {
     public static function getUsername() {
         return $_SESSION['username'] ?? null;
     }
+
+    public static function logout() {
+        self::init();
+        $_SESSION = array();
+        session_destroy();
+        header('Location: /auth.php');
+        exit();
+    }
 }
 ?>

@@ -12,7 +12,6 @@ class AuthController {
             return ['error' => 'La contraseña debe tener al menos 8 caracteres.'];
         }
 
-        // Verificar si el usuario o email ya existen
         if (User::findByUsername($username)) {
             return ['error' => 'El nombre de usuario ya está en uso.'];
         }
@@ -43,8 +42,8 @@ class AuthController {
         if (!password_verify($password, $data['password'])) {
             return ['error' => 'Credenciales inválidas.'];
         }
-        // Iniciar sesión
-        session_start();
+
+        SessionController::init();
         $_SESSION['user_id'] = $data['id'];
         $_SESSION['username'] = $data['username'];
         return ['success' => true];

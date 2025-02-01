@@ -15,6 +15,7 @@ try {
             confirmed TINYINT(1) DEFAULT 0,
             reset_token VARCHAR(64) NULL,
             reset_expires DATETIME NULL,
+            notifications_enabled TINYINT(1) DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 

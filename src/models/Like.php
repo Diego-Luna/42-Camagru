@@ -17,11 +17,9 @@ class Like {
     }
 
     public function save() {
-        // Code to save the like to the database
     }
 
     public function delete() {
-        // Code to delete the like from the database
     }
 }
 

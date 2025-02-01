@@ -27,7 +27,6 @@ class Image {
         $this->imagePath = $imagePath;
     }
 
-    // Additional methods for image-related operations can be added here
 }
 
 ?>

@@ -7,7 +7,7 @@ class User {
     private $confirmation_token;
     private $reset_token;
     private $reset_expires;
-    private $confirmed = 0; // 0 = no confirmado; 1 = confirmado
+    private $confirmed = 0;
 
     public function __construct($username, $email, $password) {
         $this->username = $username;
@@ -93,6 +93,44 @@ class User {
         return $stmt->execute([
             ':password' => password_hash($newPassword, PASSWORD_DEFAULT),
             ':token' => $token
+        ]);
+    }
+
+    public static function updateProfile($userId, $data) {
+        $pdo = getDatabaseConnection();
+        $updates = [];
+        $params = [':id' => $userId];
+
+        if (isset($data['username'])) {
+            $updates[] = "username = :username";
+            $params[':username'] = $data['username'];
+        }
+        if (isset($data['email'])) {
+            $updates[] = "email = :email";
+            $params[':email'] = $data['email'];
+        }
+        if (isset($data['notifications_enabled'])) {
+            $updates[] = "notifications_enabled = :notifications";
+            $params[':notifications'] = $data['notifications_enabled'];
+        }
+
+        if (empty($updates)) return false;
+
+        $sql = "UPDATE users SET " . implode(', ', $updates) . " WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute($params);
+    }
+
+    public static function updatePassword($userId, $newPassword) {
+        $pdo = getDatabaseConnection();
+        $stmt = $pdo->prepare("
+            UPDATE users 
+            SET password = :password 
+            WHERE id = :id
+        ");
+        return $stmt->execute([
+            ':password' => password_hash($newPassword, PASSWORD_DEFAULT),
+            ':id' => $userId
         ]);
     }
 }

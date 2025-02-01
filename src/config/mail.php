@@ -8,7 +8,6 @@
         $headers .= "Reply-To: camagru@example.com\r\n";
         $headers .= "X-Mailer: PHP/" . phpversion();
 
-        // Use error_log instead of file_put_contents
         error_log("Sending mail to: " . $email . " with token: " . $token);
         
         return mail($email, $subject, $message, $headers);

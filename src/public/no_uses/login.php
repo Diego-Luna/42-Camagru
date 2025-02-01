@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($res['error'])) {
         $message = $res['error'];
     } else {
-        // Si login OK, redirigir a felicidades.php
         header('Location: felicidades.php');
         exit;
     }

@@ -1,19 +1,21 @@
 <?php
-
-require_once '../controllers/SessionController.php';
-SessionController::init();
-
 require_once '../config/database.php';
 require_once '../controllers/AuthController.php';
+require_once '../controllers/SessionController.php';
 
+SessionController::init();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'logout') {
+    SessionController::logout();
+}
 
 $message = '';
 $action = $_GET['action'] ?? 'login';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['action'])) {
     $controller = new AuthController();
     
-    if ($_POST['form_type'] === 'register') {
+    if (isset($_POST['form_type']) && $_POST['form_type'] === 'register') {
         $result = $controller->register(
             $_POST['username'],
             $_POST['email'],
@@ -21,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_POST['confirm_password']
         );
         $message = isset($result['error']) ? $result['error'] : $result['success'];
-    } else {
+    } elseif (isset($_POST['form_type']) && $_POST['form_type'] === 'login') {
         $res = $controller->login($_POST['username'], $_POST['password']);
         if (isset($res['error'])) {
             $message = $res['error'];
