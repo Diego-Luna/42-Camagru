@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   php-fpm:
@@ -5,13 +6,19 @@ services:
       context: ./php
     volumes:
       - ../:/var/www/camagru
+    depends_on:
+      - mysql
     networks:
       - camagru-network
     environment:
-      - PHP_INI_SCAN_DIR=/usr/local/etc/php/custom.d
+      - MYSQL_HOST=mysql
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MAIL_FROM=${MAIL_FROM}
 
   nginx:
-    image: nginx:alpine
+    image: nginx:1.27.3
     ports:
       - "8080:80"
     volumes:
@@ -22,6 +29,23 @@ services:
     networks:
       - camagru-network
 
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - camagru-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   migrate:
     build:
       context: ./php
@@ -29,43 +53,32 @@ services:
       - ../:/var/www/camagru
     environment:
       MYSQL_HOST: mysql
-      MYSQL_DATABASE: camagru
-      MYSQL_USER: user_camagru
-      MYSQL_PASSWORD: super_secret
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     depends_on:
       mysql:
         condition: service_healthy
     networks:
       - camagru-network
     command: >
-      sh -c '
-        echo "Waiting for mysql..."
+      sh -c "
+        echo 'Esperando a que MySQL esté listo...'
         while ! nc -z mysql 3306; do
           sleep 1
         done
-        echo "MySQL is up - executing migrations"
-        php /var/www/camagru/src/public/config/migrate.php
-      '
+        echo 'MySQL está listo, ejecutando migraciones...'
+        php /var/www/camagru/src/config/migrate.php
+      "
 
-  mysql:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: camagru
-      MYSQL_USER: user_camagru
-      MYSQL_PASSWORD: super_secret
-    volumes:
-      - mysql_data:/var/lib/mysql
+  mailhog:
+    image: mailhog/mailhog
+    platform: linux/amd64
     ports:
-      - "3306:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
+      - "1025:1025"
+      - "8025:8025"
     networks:
       - camagru-network
-
 
 networks:
   camagru-network:

@@ -1,3 +1,4 @@
+<?php
 class Like {
     private $id;
     private $imageId;
@@ -23,3 +24,5 @@ class Like {
         // Code to delete the like from the database
     }
 }
+
+?>
