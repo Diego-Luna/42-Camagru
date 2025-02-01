@@ -49,5 +49,34 @@ class AuthController {
         $_SESSION['username'] = $data['username'];
         return ['success' => true];
     }
+
+    public function forgotPassword($email) {
+        $user = User::findByEmail($email);
+        if (!$user) {
+            return ['error' => 'Email not found'];
+        }
+    
+        $token = User::createPasswordReset($email);
+        if ($token && sendPasswordResetEmail($email, $token)) {
+            return ['success' => 'Password reset link sent to your email'];
+        }
+        return ['error' => 'Failed to send reset link'];
+    }
+    
+    public function resetPassword($token, $password, $confirmPassword) {
+        if ($password !== $confirmPassword) {
+            return ['error' => 'Passwords do not match'];
+        }
+        if (strlen($password) < 8) {
+            return ['error' => 'Password must be at least 8 characters'];
+        }
+        
+        if (User::resetPassword($token, $password)) {
+            return ['success' => 'Password updated successfully'];
+        }
+        return ['error' => 'Invalid or expired reset link'];
+    }
+
+
 }
 ?>

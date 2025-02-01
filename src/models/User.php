@@ -5,6 +5,8 @@ class User {
     private $email;
     private $password;
     private $confirmation_token;
+    private $reset_token;
+    private $reset_expires;
     private $confirmed = 0; // 0 = no confirmado; 1 = confirmado
 
     public function __construct($username, $email, $password) {
@@ -59,6 +61,39 @@ class User {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
         $stmt->execute([':email' => $email]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public static function createPasswordReset($email) {
+        $token = bin2hex(random_bytes(32));
+        $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+        
+        $pdo = getDatabaseConnection();
+        $stmt = $pdo->prepare("
+            UPDATE users 
+            SET reset_token = :token, reset_expires = :expires 
+            WHERE email = :email
+        ");
+        
+        return $stmt->execute([
+            ':token' => $token,
+            ':expires' => $expires,
+            ':email' => $email
+        ]) ? $token : false;
+    }
+
+    public static function resetPassword($token, $newPassword) {
+        $pdo = getDatabaseConnection();
+        $stmt = $pdo->prepare("
+            UPDATE users 
+            SET password = :password, reset_token = NULL, reset_expires = NULL 
+            WHERE reset_token = :token 
+            AND reset_expires > NOW()
+        ");
+        
+        return $stmt->execute([
+            ':password' => password_hash($newPassword, PASSWORD_DEFAULT),
+            ':token' => $token
+        ]);
     }
 }
 ?>

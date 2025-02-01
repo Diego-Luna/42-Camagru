@@ -11,8 +11,10 @@ try {
             username VARCHAR(50) UNIQUE NOT NULL,
             email VARCHAR(100) UNIQUE NOT NULL,
             password VARCHAR(255) NOT NULL,
-            confirmation_token VARCHAR(40) NOT NULL,
+            confirmation_token VARCHAR(40) NULL,
             confirmed TINYINT(1) DEFAULT 0,
+            reset_token VARCHAR(64) NULL,
+            reset_expires DATETIME NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
