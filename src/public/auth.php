@@ -5,6 +5,7 @@ require_once '../controllers/SessionController.php';
 
 SessionController::init();
 
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'logout') {
     SessionController::logout();
 }
