@@ -6,41 +6,41 @@ require_once __DIR__ . '/../models/User.php';
 class AuthController {
     public function register($username, $email, $password, $confirm_password) {
         if ($password !== $confirm_password) {
-            return ['error' => 'Las contraseñas no coinciden.'];
+            return ['error' => 'Passwords do not match.'];
         }
         if (strlen($password) < 8) {
-            return ['error' => 'La contraseña debe tener al menos 8 caracteres.'];
+            return ['error' => 'Password must be at least 8 characters long.'];
         }
 
         if (User::findByUsername($username)) {
-            return ['error' => 'El nombre de usuario ya está en uso.'];
+            return ['error' => 'Username is already in use.'];
         }
         if (User::findByEmail($email)) {
-            return ['error' => 'El correo electrónico ya está en uso.'];
+            return ['error' => 'Email is already in use.'];
         }
 
         try {
             $user = new User($username, $email, $password);
             if ($user->save()) {
                 sendConfirmationEmail($email, $user->getToken());
-                return ['success' => 'Registro exitoso. Revisa tu correo para confirmar la cuenta.'];
+                return ['success' => 'Registration successful. Please check your email to confirm your account.'];
             }
-            return ['error' => 'Error al registrar el usuario.'];
+            return ['error' => 'Error registering user.'];
         } catch (Exception $e) {
-            return ['error' => 'Error inesperado: ' . $e->getMessage()];
+            return ['error' => 'Unexpected error: ' . $e->getMessage()];
         }
     }
 
     public function login($username, $password) {
         $data = User::findByUsername($username);
         if (!$data) {
-            return ['error' => 'Usuario no encontrado.'];
+            return ['error' => 'User not found.'];
         }
         if ($data['confirmed'] == 0) {
-            return ['error' => 'Cuenta no confirmada. Revisa tu correo.'];
+            return ['error' => 'Account not confirmed. Please check your email.'];
         }
         if (!password_verify($password, $data['password'])) {
-            return ['error' => 'Credenciales inválidas.'];
+            return ['error' => 'Invalid credentials.'];
         }
 
         SessionController::init();
@@ -52,30 +52,28 @@ class AuthController {
     public function forgotPassword($email) {
         $user = User::findByEmail($email);
         if (!$user) {
-            return ['error' => 'Email not found'];
+            return ['error' => 'Email not found.'];
         }
     
         $token = User::createPasswordReset($email);
         if ($token && sendPasswordResetEmail($email, $token)) {
-            return ['success' => 'Password reset link sent to your email'];
+            return ['success' => 'Password reset link has been sent to your email.'];
         }
-        return ['error' => 'Failed to send reset link'];
+        return ['error' => 'Failed to send reset link.'];
     }
     
     public function resetPassword($token, $password, $confirmPassword) {
         if ($password !== $confirmPassword) {
-            return ['error' => 'Passwords do not match'];
+            return ['error' => 'Passwords do not match.'];
         }
         if (strlen($password) < 8) {
-            return ['error' => 'Password must be at least 8 characters'];
+            return ['error' => 'Password must be at least 8 characters long.'];
         }
         
         if (User::resetPassword($token, $password)) {
-            return ['success' => 'Password updated successfully'];
+            return ['success' => 'Password has been updated successfully.'];
         }
-        return ['error' => 'Invalid or expired reset link'];
+        return ['error' => 'Invalid or expired reset link.'];
     }
-
-
 }
 ?>

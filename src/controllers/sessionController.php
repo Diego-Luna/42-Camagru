@@ -14,6 +14,7 @@ class SessionController {
         self::init();
         if (!self::isLoggedIn()) {
             header('Location: /auth.php');
+            echo "exit";
             exit;
         }
     }
@@ -30,7 +31,7 @@ class SessionController {
         self::init();
         $_SESSION = array();
         session_destroy();
-        header('Location: /auth.php');
+        header('Location: auth.php');
         exit();
     }
 }

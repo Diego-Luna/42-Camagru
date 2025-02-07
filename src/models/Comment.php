@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../config/database.php';
 
 class Comment {
     private $id;
@@ -26,6 +27,20 @@ class Comment {
     public function setContent($content) {
         $this->content = $content;
     }
+    
+    public static function saveComment($userId, $imageId, $content) {
+        $pdo = getDatabaseConnection();
+        $stmt = $pdo->prepare("INSERT INTO comments (image_id, user_id, content) VALUES (?, ?, ?)");
+        return $stmt->execute([$imageId, $userId, $content]);
+    }
+    
+    public static function getComments($imageId) {
+        $pdo = getDatabaseConnection();
+        $stmt = $pdo->prepare("SELECT c.*, u.username FROM comments c 
+            JOIN users u ON c.user_id = u.id 
+            WHERE c.image_id = ? ORDER BY c.created_at ASC");
+        $stmt->execute([$imageId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
-
 ?>

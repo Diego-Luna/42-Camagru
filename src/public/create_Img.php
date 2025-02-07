@@ -3,90 +3,132 @@ require_once '../config/database.php';
 require_once '../controllers/AuthController.php';
 require_once '../controllers/SessionController.php';
 require_once '../models/Image.php';
-SessionController::init();
 
+// CSP disallows inline scripts, so no inline <script> allowed
+header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self';");
+header("X-XSS-Protection: 1; mode=block");
+header("X-Content-Type-Options: nosniff");
+
+SessionController::init();
 SessionController::requireLogin();
 
 $userId = $_SESSION['user_id'];
-// Asume que este método existe y devuelve un arreglo de imágenes del usuario
 $images = Image::getByUser($userId);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Camagru - Create Image</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="./css/styles.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
+  <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
+
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-light">
+    <?php include '../components/navbar.php'; ?>
+    
+    <div class="container-fluid py-4">
+        <div class="row">
+            <!-- Main Content - Left Column -->
+            <div class="col-md-8 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header">
+                        <h2 class="h4 mb-0">Create New Image</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Preview Area -->
+                        <div class="preview-container bg-dark rounded mb-3 d-flex align-items-center justify-content-center">
+                            <div id="preview" class="w-100"></div>
+                            <canvas id="canvas" class="d-none"></canvas>
+                            <video id="video" autoplay playsinline></video>
+                        </div>
 
-  <?php include '../components/navbar.php'; ?>
-
-  <div class="max-w-5xl mx-auto mt-8 p-6 bg-white shadow-md rounded">
-    <h1 class="text-2xl font-bold text-center mb-6">Create Image</h1>
-
-    <div class="flex flex-wrap gap-6">
-      <!-- Creation Section -->
-      <div class="flex-1 min-w-[300px] flex flex-col items-center">
-        <video id="video" autoplay playsinline class="w-full max-w-md bg-black rounded shadow"></video>
-        <canvas id="canvas" class="w-full max-w-md bg-black hidden rounded shadow"></canvas>
-
-        <div class="flex gap-3 mt-4 flex-wrap justify-center">
-          <button id="toggleMode"
-                  class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100">
-            Use Upload
-          </button>
-          <button id="captureBtn" disabled
-                  class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
-            Take Photo
-          </button>
-          <input type="file" id="fileInput" accept="image/*" class="hidden" />
-        </div>
-
-        <div class="mt-4">
-          <button id="saveBtn" disabled
-                  class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
-            Create Image
-          </button>
-        </div>
-
-        <div id="preview" class="mt-4 w-full max-w-md"></div>
-      </div>
-
-      <!-- Sticker Selection Section -->
-      <div class="flex-1 min-w-[200px] bg-gray-50 p-4 rounded overflow-auto max-h-[600px]">
-        <h3 class="font-semibold mb-2">Select Sticker (Required)</h3>
-        <div class="grid grid-cols-2 gap-3">
-          <img src="stickers/cat_1.png" class="sticker w-20 h-20 object-contain border-2 border-transparent rounded cursor-pointer hover:border-blue-500" data-src="stickers/cat_1.png" />
-          <img src="stickers/dog_1.png" class="sticker w-20 h-20 object-contain border-2 border-transparent rounded cursor-pointer hover:border-blue-500" data-src="stickers/dog_1.png" />
-        </div>
-      </div>
-    </div>
-
-    <!-- User Created Images Section -->
-    <div class="mt-8">
-      <h2 class="text-xl font-bold mb-4">My Created Images</h2>
-      <?php if (!empty($images)): ?>
-        <div class="grid grid-cols-3 gap-4">
-          <?php foreach($images as $img): ?>
-            <div class="border p-2 rounded">
-              <img src="<?php echo htmlspecialchars($img['image_path']); ?>" alt="Created Image" class="w-full object-cover rounded mb-2" />
-              <form action="controllers/delete_image.php" method="POST" onsubmit="return confirm('Are you sure you want to delete this image?');">
-                <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($img['id']); ?>" />
-                <button type="submit" class="w-full px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">
-                  Delete
-                </button>
-              </form>
+                        <!-- Controls -->
+                        <div class="d-flex gap-2 justify-content-center mb-3">
+                            <button id="toggleMode" class="btn btn-outline-secondary">Use Upload</button>
+                            <button id="captureBtn" disabled class="btn btn-outline-primary">Take Photo</button>
+                            <input type="file" id="fileInput" accept="image/*" class="d-none" />
+                        </div>
+                        
+                        <button id="saveBtn" disabled class="btn btn-success w-100">Create Image</button>
+                        
+                        <!-- Instructions -->
+                        <div class="alert alert-info mt-3 mb-0">
+                            <h6 class="alert-heading">Instructions:</h6>
+                            <ol class="mb-0 small">
+                                <li>Select a sticker (required)</li>
+                                <li>Use webcam or upload an image</li>
+                                <li>Take/Select your photo</li>
+                                <li>Drag sticker to position</li>
+                                <li>Click Create Image to save</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
             </div>
-          <?php endforeach; ?>
-        </div>
-      <?php else: ?>
-        <p>You have not created any images yet.</p>
-      <?php endif; ?>
-    </div>
-  </div>
 
-  <script src="./js/photo.js"></script>
+            <!-- Sidebar - Right Column -->
+            <div class="col-md-4">
+                <!-- Sticker Selection -->
+                <div class="card shadow mb-4">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">Select Sticker</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <img src="stickers/cat_1.png"
+                                     class="sticker img-thumbnail rounded w-100"
+                                     data-src="stickers/cat_1.png"
+                                     alt="Cat sticker">
+                            </div>
+                            <div class="col-6">
+                                <img src="stickers/dog_1.png"
+                                     class="sticker img-thumbnail rounded w-100"
+                                     data-src="stickers/dog_1.png"
+                                     alt="Dog sticker">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Previous Images -->
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">My Images</h3>
+                    </div>
+                    <div class="card-body p-2">
+                        <?php if (!empty($images)): ?>
+                            <div class="row g-2 thumbnail-grid">
+                                <?php foreach($images as $img): ?>
+                                    <div class="col-6">
+                                        <div class="position-relative">
+                                            <img src="<?php echo htmlspecialchars($img['image_path'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                 class="img-thumbnail w-100"
+                                                 alt="Created Image">
+                                            <form action="controllers/delete_image.php"
+                                                  method="POST"
+                                                  class="confirm-delete-form position-absolute bottom-0 start-0 end-0 m-2">
+                                                <input type="hidden" name="image_id"
+                                                       value="<?php echo htmlspecialchars($img['id'], ENT_QUOTES, 'UTF-8'); ?>">
+                                                <button type="submit" class="btn btn-danger btn-sm w-100">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <p class="text-muted mb-0">No images created yet.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/photo.js"></script>
 </body>
 </html>

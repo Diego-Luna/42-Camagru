@@ -38,7 +38,6 @@ class Image {
         ]);
     }
     
-    // Nuevo método para obtener imágenes por usuario
     public static function getByUser($userId) {
         $pdo = getDatabaseConnection();
         $stmt = $pdo->prepare("

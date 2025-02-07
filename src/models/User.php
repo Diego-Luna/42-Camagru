@@ -98,27 +98,63 @@ class User {
 
     public static function updateProfile($userId, $data) {
         $pdo = getDatabaseConnection();
+    
+        $username = trim($data['username']);
+        $email = trim($data['email']);
+    
+        if (isset($username)) {
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE username = :username AND id != :userId");
+            $stmt->execute([
+                ':username' => $username,
+                ':userId' => $userId
+            ]);
+            if ($stmt->fetch()) {
+                return "Username already exists. Please choose another one.";
+            }
+        }
+    
+        if (isset($email)) {
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email AND id != :userId");
+            $stmt->execute([
+                ':email' => $email,
+                ':userId' => $userId
+            ]);
+            if ($stmt->fetch()) {
+                return "Email already exists. Please choose another one.";
+            }
+        }
+    
         $updates = [];
         $params = [':id' => $userId];
-
-        if (isset($data['username'])) {
+    
+        if ($username) {
             $updates[] = "username = :username";
-            $params[':username'] = $data['username'];
+            $params[':username'] = $username;
         }
-        if (isset($data['email'])) {
+        if ($email) {
             $updates[] = "email = :email";
-            $params[':email'] = $data['email'];
+            $params[':email'] = $email;
         }
         if (isset($data['notifications_enabled'])) {
             $updates[] = "notifications_enabled = :notifications";
             $params[':notifications'] = $data['notifications_enabled'];
         }
-
-        if (empty($updates)) return false;
-
-        $sql = "UPDATE users SET " . implode(', ', $updates) . " WHERE id = :id";
-        $stmt = $pdo->prepare($sql);
-        return $stmt->execute($params);
+    
+        if (empty($updates)) {
+            return false;
+        }
+    
+        try {
+            $sql = "UPDATE users SET " . implode(', ', $updates) . " WHERE id = :id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            return true;
+        } catch (PDOException $e) {
+            if ($e->errorInfo[1] == 1062) {
+                return "Username or email already in use. Please choose another one.";
+            }
+            throw $e;
+        }
     }
 
     public static function updatePassword($userId, $newPassword) {
@@ -132,6 +168,13 @@ class User {
             ':password' => password_hash($newPassword, PASSWORD_DEFAULT),
             ':id' => $userId
         ]);
+    }
+
+    public static function findById($id) {
+        $pdo = getDatabaseConnection();
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
 ?>

@@ -1,5 +1,3 @@
-console.log("photo.js loaded");
-
 let isWebcamMode = true;
 let selectedSticker = null;
 let stickersOnCanvas = [];
@@ -7,6 +5,7 @@ let baseImageData = null;
 let draggingIndex = null;
 let offsetX = 0;
 let offsetY = 0;
+let stateButtons = 0;
 
 const STICKER_WIDTH = 100;
 const STICKER_HEIGHT = 100;
@@ -24,7 +23,6 @@ async function startWebcam() {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = stream;
     await video.play();
-    // Verifica botones
     updateButtons();
   } catch (err) {
     console.error("Webcam error:", err);
@@ -34,9 +32,10 @@ async function startWebcam() {
 
 function switchToUpload() {
   isWebcamMode = false;
-  video.classList.add('hidden');
-  fileInput.classList.remove('hidden');
+  video.classList.add('d-none');
+  fileInput.classList.remove('d-none');
   toggleBtn.textContent = 'Use Webcam';
+  captureBtn.classList.add('d-none');
 
   if (video.srcObject) {
     video.srcObject.getTracks().forEach(track => track.stop());
@@ -46,9 +45,10 @@ function switchToUpload() {
 
 function switchToWebcam() {
   isWebcamMode = true;
-  video.classList.remove('hidden');
-  fileInput.classList.add('hidden');
+  video.classList.remove('d-none');
+  fileInput.classList.add('d-none');
   toggleBtn.textContent = 'Use Upload';
+  captureBtn.classList.remove('d-none');
   startWebcam();
   updateButtons();
 }
@@ -59,78 +59,75 @@ toggleBtn.onclick = () => {
 };
 
 fileInput.onchange = e => {
-    if (!selectedSticker || !e.target.files[0]) return;
-    
-    const reader = new FileReader();
-    reader.onload = evt => {
-        const img = new Image();
-        img.onload = () => {
-            initCanvas(img);
-            const centerX = (canvas.width / 2) - (STICKER_WIDTH / 2);
-            const centerY = (canvas.height / 2) - (STICKER_HEIGHT / 2);
-            
-            stickersOnCanvas.push({
-                path: selectedSticker,
-                x: centerX,
-                y: centerY
-            });
-            redrawCanvas();
-        };
-        img.src = evt.target.result;
-    };
-    reader.readAsDataURL(e.target.files[0]);
-};
-
-captureBtn.onclick = () => {
-    if (!selectedSticker) return;
-    initCanvas(video);
-
-    const centerX = (canvas.width / 2) - (STICKER_WIDTH / 2);
-    const centerY = (canvas.height / 2) - (STICKER_HEIGHT / 2);
-    
-    stickersOnCanvas.push({
+  if (!selectedSticker || !e.target.files[0]) return;
+  
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const img = new Image();
+    img.onload = () => {
+      initCanvas(img);
+      const centerX = (canvas.width / 2) - (STICKER_WIDTH / 2);
+      const centerY = (canvas.height / 2) - (STICKER_HEIGHT / 2);
+      
+      stickersOnCanvas.push({
         path: selectedSticker,
         x: centerX,
         y: centerY
-    });
-    redrawCanvas();
+      });
+      redrawCanvas();
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(e.target.files[0]);
+};
+
+captureBtn.onclick = () => {
+  if (!selectedSticker) return;
+
+  initCanvas(video);
+  const centerX = (canvas.width / 2) - (STICKER_WIDTH / 2);
+  const centerY = (canvas.height / 2) - (STICKER_HEIGHT / 2);
+  stickersOnCanvas.push({
+    path: selectedSticker,
+    x: centerX,
+    y: centerY
+  });
+  redrawCanvas();
 };
 
 function initCanvas(source) {
   canvas.width = source.videoWidth || source.width;
   canvas.height = source.videoHeight || source.height;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
   ctx.drawImage(source, 0, 0);
   baseImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  canvas.classList.remove('hidden');
+  canvas.classList.remove('d-none');
   redrawCanvas();
   updateButtons();
 }
 
 document.querySelectorAll('.sticker').forEach(stickerElem => {
-    stickerElem.onclick = () => {
-        document.querySelectorAll('.sticker').forEach(s => 
-            s.classList.remove('border-blue-500'));
-        
-        stickerElem.classList.add('border-blue-500');
-        selectedSticker = stickerElem.dataset.src;
-        
-        if (baseImageData) {
-            const centerX = (canvas.width / 2) - (STICKER_WIDTH / 2);
-            const centerY = (canvas.height / 2) - (STICKER_HEIGHT / 2);
-            
-            stickersOnCanvas.push({
-                path: selectedSticker,
-                x: centerX,
-                y: centerY
-            });
-            redrawCanvas();
-        }
-        
-        updateButtons();
-    };
+  stickerElem.onclick = () => {
+    document.querySelectorAll('.sticker').forEach(s => 
+      s.classList.remove('border', 'border-primary'));
+    
+    stickerElem.classList.add('border', 'border-primary');
+    selectedSticker = stickerElem.dataset.src;
+    
+    if (baseImageData) {
+      const centerX = (canvas.width / 2) - (STICKER_WIDTH / 2);
+      const centerY = (canvas.height / 2) - (STICKER_HEIGHT / 2);
+      stickersOnCanvas.push({
+        path: selectedSticker,
+        x: centerX,
+        y: centerY
+      });
+      redrawCanvas();
+    }
+    
+    updateButtons();
+  };
 });
-
 
 canvas.addEventListener('mousedown', e => {
   if (!baseImageData) return;
@@ -157,10 +154,8 @@ canvas.addEventListener('mousedown', e => {
   }
 });
 
-
 canvas.addEventListener('mousemove', e => {
   if (draggingIndex === null) return;
-
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
@@ -173,17 +168,45 @@ canvas.addEventListener('mousemove', e => {
   redrawCanvas();
 });
 
-
 canvas.addEventListener('mouseup', () => {
   draggingIndex = null;
   canvas.style.cursor = 'default';
 });
 
+canvas.addEventListener('dblclick', e => {
+  if (!baseImageData) return;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const clickX = (e.clientX - rect.left) * scaleX;
+  const clickY = (e.clientY - rect.top) * scaleY;
+
+  for (let i = stickersOnCanvas.length - 1; i >= 0; i--) {
+    const sticker = stickersOnCanvas[i];
+    if (
+      clickX >= sticker.x &&
+      clickX <= sticker.x + STICKER_WIDTH &&
+      clickY >= sticker.y &&
+      clickY <= sticker.y + STICKER_HEIGHT
+    ) {
+      if (stickersOnCanvas.length > 1) {
+        stickersOnCanvas.splice(i, 1);
+        redrawCanvas();
+      } else {
+        alert("There must be at least one sticker on the canvas.");
+      }
+      break;
+    }
+  }
+});
+
 function redrawCanvas() {
   if (!baseImageData) return;
   const ctx = canvas.getContext('2d');
+  // Restore the base image
   ctx.putImageData(baseImageData, 0, 0);
 
+  // Draw each sticker in its position
   Promise.all(stickersOnCanvas.map(sticker => {
     return new Promise(resolve => {
       const img = new Image();
@@ -201,54 +224,69 @@ function redrawCanvas() {
 }
 
 saveBtn.onclick = () => {
-    if (!baseImageData || stickersOnCanvas.length === 0) return;
-    
-    canvas.toBlob(async (blob) => {
-        const formData = new FormData();
-        formData.append('image', blob, 'image.png');
+  if (!baseImageData || stickersOnCanvas.length === 0)
+    return alert("Please place at least one sticker before saving.");
 
-        stickersOnCanvas.forEach((sticker, index) => {
-            formData.append(`stickers[${index}][path]`, sticker.path);
-            formData.append(`stickers[${index}][x]`, sticker.x);
-            formData.append(`stickers[${index}][y]`, sticker.y);
-        });
-        
-        try {
-            const response = await fetch('controllers/process_image.php', {
-                method: 'POST',
-                body: formData
-            });
-            
-            let data;
-            const contentType = response.headers.get('content-type');
-            
-            if (contentType && contentType.includes('application/json')) {
-                data = await response.json();
-            } else {
-                const text = await response.text();
-                console.error('Invalid response:', text);
-                throw new Error('Server did not return JSON');
-            }
-            
-            if (data.success) {
-                window.location.href = 'index.php';
-            } else {
-                alert('Error saving image: ' + (data.error || 'Unknown error'));
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to save image: ' + error.message);
-        }
-    }, 'image/png');
+  canvas.toBlob(async (blob) => {
+    const formData = new FormData();
+    formData.append('image', blob, 'image.png');
+
+    stickersOnCanvas.forEach((sticker, index) => {
+      formData.append(`stickers[${index}][path]`, sticker.path);
+      formData.append(`stickers[${index}][x]`, sticker.x);
+      formData.append(`stickers[${index}][y]`, sticker.y);
+    });
+    
+    try {
+      const response = await fetch('controllers/process_image.php', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const contentType = response.headers.get('content-type');
+      let data;
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = { error: 'Invalid response, expected JSON.' };
+      }
+
+      // Show message if creation was successful, otherwise error
+      if (data.success) {
+        alert("Image created successfully!");
+        window.location.reload();  // Reload page on success
+      } else {
+        alert(data.error || "Error creating the image.");
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred while creating the image.");
+    }
+  }, 'image/png');
 };
 
 function updateButtons() {
-  
   captureBtn.disabled = !selectedSticker;
   toggleBtn.disabled = !selectedSticker;
-  
+  if (!selectedSticker) {
+    stateButtons = 0;
+  }
   saveBtn.disabled = (!baseImageData || stickersOnCanvas.length === 0);
 }
+
+// Confirm delete forms
+document.addEventListener('DOMContentLoaded', () => {
+  const deleteForms = document.querySelectorAll('.confirm-delete-form');
+  deleteForms.forEach(form => {
+    form.addEventListener('submit', event => {
+      const message = form.getAttribute('data-confirm-message') || 'Are you sure?';
+      if (!confirm(message)) {
+        event.preventDefault();
+      }
+    });
+  });
+});
 
 updateButtons();
 startWebcam();
