@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../controllers/SessionController.php';
+require_once __DIR__ . '/../controllers/sessionController.php';
 SessionController::init();
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>

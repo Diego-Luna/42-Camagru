@@ -1,10 +1,10 @@
 <?php
 require_once '../config/database.php';
 require_once '../controllers/AuthController.php';
-require_once '../controllers/SessionController.php';
+require_once '../controllers/sessionController.php';
 
 // Header de seguridad
-header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self';");
+header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self';img-src 'self' data:;");
 header("X-XSS-Protection: 1; mode=block");
 header("X-Content-Type-Options: nosniff");
 

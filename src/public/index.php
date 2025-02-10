@@ -1,5 +1,5 @@
 <?php
-require_once '../controllers/SessionController.php';
+require_once '../controllers/sessionController.php';
 SessionController::init();
 require_once '../config/database.php';
 require_once '../models/Image.php';

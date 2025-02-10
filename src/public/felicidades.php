@@ -1,5 +1,5 @@
 <?php
-require_once '../controllers/SessionController.php';
+require_once '../controllers/sessionController.php';
 SessionController::requireLogin();
 
 // Security headers

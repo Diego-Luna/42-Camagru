@@ -4,7 +4,7 @@ header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style
 header("X-XSS-Protection: 1; mode=block");
 header("X-Content-Type-Options: nosniff");
 
-require_once '../controllers/SessionController.php';
+require_once '../controllers/sessionController.php';
 SessionController::requireLogin();
 require_once '../models/User.php';
 require_once '../config/database.php';

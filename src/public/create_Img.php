@@ -1,7 +1,7 @@
 <?php
 require_once '../config/database.php';
 require_once '../controllers/AuthController.php';
-require_once '../controllers/SessionController.php';
+require_once '../controllers/sessionController.php';
 require_once '../models/Image.php';
 
 // CSP disallows inline scripts, so no inline <script> allowed
