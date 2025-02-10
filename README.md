@@ -110,16 +110,3 @@ camagru
 2. Navigate to the project directory.
 3. Copy `.env.example` to `.env` and configure your environment variables.
 4. Run `docker-compose up` to start the application.
-
-## Usage
-
-- Access the application through your web browser.
-- Register for an account to start capturing and sharing images.
-
-## Contributing
-
-Contributions are welcome! Please submit a pull request or open an issue for any suggestions or improvements.
-
-## License
-
-This project is licensed under the MIT License.
