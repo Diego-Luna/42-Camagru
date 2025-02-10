@@ -61,6 +61,15 @@ toggleBtn.onclick = () => {
 
 fileInput.onchange = e => {
   if (!selectedSticker || !e.target.files[0]) return;
+
+  const MAX_FILE_SIZE = 1 * 1024 * 1024;
+  const file = e.target.files[0];
+
+  if (file.size > MAX_FILE_SIZE) {
+    alert("The image exceeds the maximum allowed size of 1 MB.");
+    fileInput.value = ''; 
+    return
+  }
   
   const reader = new FileReader();
   reader.onload = evt => {
