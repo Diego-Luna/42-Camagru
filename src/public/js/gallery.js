@@ -30,7 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 initCommentToggles();
             }
         } catch (error) {
-            console.error("Error loading more images:", error);
+            // console.error("Error loading more images:", error);
+            alert("Error loading more images:" + error);
         } finally {
             document.getElementById('loading').classList.add('d-none');
             loading = false;

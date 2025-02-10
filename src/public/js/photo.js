@@ -25,7 +25,8 @@ async function startWebcam() {
     await video.play();
     updateButtons();
   } catch (err) {
-    console.error("Webcam error:", err);
+    // console.error("Webcam error:", err);
+    alert("Webcam error:" + err);
     switchToUpload();
   }
 }
@@ -260,8 +261,9 @@ saveBtn.onclick = () => {
       }
 
     } catch (error) {
-      console.error(error);
-      alert("An error occurred while creating the image.");
+      // console.error(error);
+      alert("An error occurred while creating the image." + error
+      );
     }
   }, 'image/png');
 };

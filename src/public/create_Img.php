@@ -25,7 +25,7 @@ $images = Image::getByUser($userId);
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
         crossorigin="anonymous">
   <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
-
+    
 </head>
 <body class="bg-light">
     <?php include '../components/navbar.php'; ?>
