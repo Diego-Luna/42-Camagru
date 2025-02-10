@@ -24,7 +24,26 @@ $images = Image::getByUser($userId);
         rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
         crossorigin="anonymous">
-  <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
+  <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+
+
+  <style>
+    .preview-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px; /* Ajusta a tu gusto */
+            height: 600px;    /* Ajusta a tu gusto */
+            overflow: hidden;
+            background-color: #000;
+        }
+    #video,
+    #canvas,
+    #preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+  </style>
     
 </head>
 <body class="bg-light">
