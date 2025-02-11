@@ -19,7 +19,7 @@ try {
     if (!file_exists($uploadDir)) {
         mkdir($uploadDir, 0777, true);
         if (!file_exists($uploadDir)) {
-            throw new Exception('Failed to create upload directory');
+            throw new Exception('Develop :Failed to create upload directory');
         }
     }
 
@@ -27,7 +27,7 @@ try {
     $uploadFile = $uploadDir . $filename;
 
     if (!move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
-        throw new Exception('Failed to upload file');
+        throw new Exception('Develop :Failed to upload file');
     }
 
     $success = Image::save($_SESSION['user_id'], $uploadFile);
