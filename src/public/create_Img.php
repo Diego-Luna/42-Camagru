@@ -131,7 +131,7 @@ $images = Image::getByUser($userId);
         </div>
     </div>
 
-    <script src="./js/photo.js"></script>
+    <script src="./js/1_photo.js"></script>
     <?php include '../components/footer.php'; ?>
 </body>
 </html>

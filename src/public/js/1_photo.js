@@ -252,14 +252,19 @@ saveBtn.onclick = () => {
 
   canvas.toBlob(async (blob) => {
     const formData = new FormData();
+    console.log("formData");
+    console.log(formData);
+    
     formData.append('image', blob, 'image.png');
+    console.log(formData);
 
     stickersOnCanvas.forEach((sticker, index) => {
       formData.append(`stickers[${index}][path]`, sticker.path);
       formData.append(`stickers[${index}][x]`, sticker.x);
       formData.append(`stickers[${index}][y]`, sticker.y);
     });
-    
+    console.log(formData);
+
     try {
       const response = await fetch('controllers/process_image.php', {
         method: 'POST',
@@ -283,8 +288,8 @@ saveBtn.onclick = () => {
       }
 
     } catch (error) {
-      // console.error(error);
-      alert("An error occurred while creating the image." + error
+      console.error(error);
+      alert("diego An error occurred while creating the image." + error
       );
     }
   }, 'image/png');
