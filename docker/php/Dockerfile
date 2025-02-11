@@ -41,5 +41,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 RUN mkdir -p /var/log/php && chmod 777 /var/log/php
 
+RUN mkdir -p /var/www/camagru/src/public/controllers/uploads \
+    && chown -R www-data:www-data /var/www/camagru/src/public/controllers/uploads \
+    && chmod -R 755 /var/www/camagru/src/public/controllers/uploads
+
 # Establecer el directorio de trabajo
 WORKDIR /var/www/camagru
