@@ -3,6 +3,9 @@ require_once __DIR__ . '/../../controllers/sessionController.php';
 require_once __DIR__ . '/../../models/Image.php';
 require_once __DIR__ . '/../../config/database.php';
 
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
 SessionController::requireLogin();
 
 header('Content-Type: application/json');
@@ -26,6 +29,8 @@ try {
 
     $success = Image::save($_SESSION['user_id'], $uploadFile);
     
+    // Limpiar cualquier salida inesperada antes de emitir el JSON
+    ob_clean();
     echo json_encode([
         'success' => $success,
         'path' => $uploadFile
@@ -33,6 +38,7 @@ try {
 
 } catch (Exception $e) {
     error_log($e->getMessage());
+    ob_clean();
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
