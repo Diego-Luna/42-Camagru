@@ -1,5 +1,7 @@
 # README.md
 
+SELECT * FROM users WHERE username='*' AND password='demo';
+
 composer install
 
 docker compose down

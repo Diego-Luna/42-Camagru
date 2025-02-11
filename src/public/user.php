@@ -1,48 +1,77 @@
 <?php
-// Security headers with updated img-src and no inline scripts allowed
-header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' https://cdn.jsdelivr.net");
-header("X-XSS-Protection: 1; mode=block");
-header("X-Content-Type-Options: nosniff");
-
+session_start();
 require_once '../controllers/sessionController.php';
 SessionController::requireLogin();
 require_once '../models/User.php';
 require_once '../config/database.php';
 
+// Generate a CSRF token if it doesn't exist
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 $message = '';
 $user = User::findByUsername($_SESSION['username']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        die("Error: Invalid CSRF token");
+    }
+    
     if (isset($_POST['update_profile'])) {
-        $updates = [
-            'username' => trim($_POST['username']),
-            'email' => trim($_POST['email']),
-            'notifications_enabled' => isset($_POST['notifications']) ? 1 : 0
-        ];
-        
-        $result = User::updateProfile($_SESSION['user_id'], $updates); // Store the result
-        
-        if ($result === true) {
-            $message = "Profile updated successfully";
-            $_SESSION['username'] = $updates['username'];
-            $user = User::findByUsername($updates['username']);
-        } elseif (is_string($result)) {
-            $message = $result; // Display the error message returned from updateProfile
+        // Sanitize and validate inputs
+        $raw_username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS);
+        $raw_email    = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+        $username = trim($raw_username);
+        $email = trim($raw_email);
+    
+        // Validate username format: only letters, numbers, and underscores, 3-30 characters long
+        if (!preg_match('/^[a-zA-Z0-9_]{3,30}$/', $username)) {
+            $message = "Username must be alphanumeric (underscores allowed) and be between 3 and 30 characters.";
+        }
+        // Validate email
+        elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $message = "The email address is not valid.";
         } else {
-            $message = "Failed to update profile";
+            $updates = [
+                'username' => $username,
+                'email'    => $email,
+                'notifications_enabled' => isset($_POST['notifications']) ? 1 : 0
+            ];
+        
+            $result = User::updateProfile($_SESSION['user_id'], $updates);
+            if ($result === true) {
+                $message = "Profile updated successfully.";
+                $_SESSION['username'] = $updates['username'];
+                $user = User::findByUsername($updates['username']);
+            } elseif (is_string($result)) {
+                $message = $result;
+            } else {
+                $message = "Failed to update profile.";
+            }
         }
     }
     
-    
     if (isset($_POST['update_password'])) {
-        if ($_POST['new_password'] === $_POST['confirm_password']) {
-            if (User::updatePassword($_SESSION['user_id'], $_POST['new_password'])) {
-                $message = "Password updated successfully";
+        $new_password     = $_POST['new_password'];
+        $confirm_password = $_POST['confirm_password'];
+
+        // Enforce minimum password requirements (reinforced on the server side)
+        if (strlen($new_password) < 8 || 
+            !preg_match('/[a-z]/', $new_password) || 
+            !preg_match('/[A-Z]/', $new_password) || 
+            !preg_match('/\d/', $new_password)) {
+            $message = "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number.";
+        }
+        elseif ($new_password === $confirm_password) {
+            if (User::updatePassword($_SESSION['user_id'], $new_password)) {
+                $message = "Password updated successfully.";
             } else {
-                $message = "Failed to update password";
+                $message = "Failed to update password.";
             }
         } else {
-            $message = "Passwords do not match";
+            $message = "Passwords do not match.";
         }
     }
 }
@@ -52,9 +81,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <title>Profile - Camagru</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Using our own styles, without Bootstrap -->
     <link rel="stylesheet" href="./css/styles.css">
     <link rel="stylesheet" href="./css/clean_b.css">
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
 </head>
 <body>
     <?php include '../components/navbar.php'; ?>
@@ -73,6 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="card-body">
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
                     <div class="mb-3">
                         <label class="form-label">Username:</label>
                         <input type="text" name="username" value="<?php echo htmlspecialchars($user['username'], ENT_QUOTES, "UTF-8"); ?>" class="form-control" required>
@@ -100,11 +131,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="card-body">
                 <form method="POST" id="passwordForm">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
                     <div class="mb-3">
                         <label class="form-label">New Password:</label>
                         <input type="password" name="new_password" id="new_password" class="form-control" 
                                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
-                               title="Must contain at least one number, one uppercase and lowercase letter, and at least 8 or more characters"
+                               title="Must contain at least one number, one uppercase letter, one lowercase letter, and at least 8 or more characters"
                                required>
                     </div>
 

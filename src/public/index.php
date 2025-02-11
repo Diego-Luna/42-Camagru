@@ -56,7 +56,7 @@ $loggedIn = isset($_SESSION['user_id']);
   </div>
   
 
-    <script src="./js/gallery.js"></script>
+    <script src="./js/new_gallery.js"></script>
     <script src="./js/comments.js"></script>
 </body>
 </html>
