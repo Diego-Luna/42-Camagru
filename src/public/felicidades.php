@@ -27,5 +27,6 @@ header("X-Content-Type-Options: nosniff");
             <a href="index.php" class="btn btn-secondary mt-3">View Gallery</a>
         </p>
     </div>
+    <?php include '../components/footer.php'; ?>
 </body>
 </html>

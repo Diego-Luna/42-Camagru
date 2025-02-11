@@ -39,5 +39,6 @@ if (isset($_GET['token'])) {
             <?php echo $message; ?>
         </div>
     </div>
+    <?php include '../components/footer.php'; ?>
 </body>
 </html>

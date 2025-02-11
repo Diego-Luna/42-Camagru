@@ -54,9 +54,8 @@ $loggedIn = isset($_SESSION['user_id']);
       <span class="text-muted">Loading more images...</span>
     </div>
   </div>
-  
-
-    <script src="./js/new_gallery.js"></script>
-    <script src="./js/comments.js"></script>
+  <script src="./js/new_gallery.js"></script>
+  <script src="./js/comments.js"></script>
+  <?php include '../components/footer.php'; ?>
 </body>
 </html>

@@ -26,41 +26,7 @@ $images = Image::getByUser($userId);
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
         crossorigin="anonymous"> -->
   <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
-
-
-  <style>
-    .preview-container {
-        position: relative;
-        width: 100%;
-        max-width: 800px;
-        height: 600px;
-        overflow: hidden;
-        background-color: #000;
-    }
-    
-    #video,
-    #canvas,
-    #preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-    
-    #video {
-        z-index: 1;
-    }
-    
-    #canvas {
-        z-index: 2;
-    }
-    
-    .d-none {
-        display: none !important;
-    }
-</style>
+  <link rel="stylesheet" href="./css/create_img.css">
     
 </head>
 <body class="bg-light">
@@ -166,5 +132,6 @@ $images = Image::getByUser($userId);
     </div>
 
     <script src="./js/photo.js"></script>
+    <?php include '../components/footer.php'; ?>
 </body>
 </html>
