@@ -1,15 +1,3 @@
-function initCommentToggles() {
-    document.querySelectorAll('.comment-toggle').forEach(button => {
-        button.addEventListener('click', () => {
-            const imageId = button.dataset.imageId;
-            const commentForm = document.getElementById(`comments-${imageId}`);
-            if (commentForm) {
-                commentForm.classList.toggle('d-none');
-            }
-        });
-    });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     let currentPage = window.galleryConfig?.initialPage || 1;
     let loading = false;
@@ -27,10 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.removeEventListener('scroll', handleScroll);
             } else {
                 document.getElementById('gallery-grid').insertAdjacentHTML('beforeend', html);
-                initCommentToggles();
             }
         } catch (error) {
-            // console.error("Error loading more images:", error);
             alert("Error loading more images:" + error);
         } finally {
             document.getElementById('loading').classList.add('d-none');
@@ -44,7 +30,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    initCommentToggles();
-    
     window.addEventListener('scroll', handleScroll);
 });

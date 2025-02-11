@@ -33,10 +33,12 @@ async function startWebcam() {
 
 function switchToUpload() {
   isWebcamMode = false;
-  video.classList.add('d-none');
+  video.style.display = 'none';
+  canvas.classList.add('d-none');
   fileInput.classList.remove('d-none');
   toggleBtn.textContent = 'Use Webcam';
   captureBtn.classList.add('d-none');
+  preview.innerHTML = '';
 
   if (video.srcObject) {
     video.srcObject.getTracks().forEach(track => track.stop());
@@ -46,10 +48,12 @@ function switchToUpload() {
 
 function switchToWebcam() {
   isWebcamMode = true;
-  video.classList.remove('d-none');
+  video.style.display = 'block';
+  canvas.classList.add('d-none');
   fileInput.classList.add('d-none');
   toggleBtn.textContent = 'Use Upload';
   captureBtn.classList.remove('d-none');
+  preview.innerHTML = '';
   startWebcam();
   updateButtons();
 }
@@ -111,7 +115,16 @@ function initCanvas(source) {
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   ctx.drawImage(source, 0, 0);
   baseImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  
   canvas.classList.remove('d-none');
+
+  // Ocultar video y mostrar canvas
+  video.style.display = 'none';
+  canvas.classList.remove('d-none');
+  preview.innerHTML = '';
+  preview.appendChild(canvas);
+
+
   redrawCanvas();
   updateButtons();
 }

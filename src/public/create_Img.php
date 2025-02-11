@@ -30,21 +30,37 @@ $images = Image::getByUser($userId);
 
   <style>
     .preview-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px; /* Ajusta a tu gusto */
-            height: 600px;    /* Ajusta a tu gusto */
-            overflow: hidden;
-            background-color: #000;
-        }
+        position: relative;
+        width: 100%;
+        max-width: 800px;
+        height: 600px;
+        overflow: hidden;
+        background-color: #000;
+    }
+    
     #video,
     #canvas,
     #preview img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
     }
-  </style>
+    
+    #video {
+        z-index: 1;
+    }
+    
+    #canvas {
+        z-index: 2;
+    }
+    
+    .d-none {
+        display: none !important;
+    }
+</style>
     
 </head>
 <body class="bg-light">

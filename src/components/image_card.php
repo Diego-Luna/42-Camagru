@@ -72,17 +72,3 @@ $postedBy = User::findById((int)$img['user_id']);
         </div>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.comment-toggle').forEach(button => {
-        button.addEventListener('click', () => {
-            const imageId = button.dataset.imageId;
-            const commentForm = document.getElementById(`comments-${imageId}`);
-            if (commentForm) {
-                commentForm.classList.toggle('d-none');
-            }
-        });
-    });
-});
-</script>
