@@ -10,10 +10,20 @@ header("X-XSS-Protection: 1; mode=block");
 header("X-Content-Type-Options: nosniff");
 
 SessionController::init();
-SessionController::requireLogin();
+// SessionController::requireLogin();
 
-$userId = $_SESSION['user_id'];
-$images = Image::getByUser($userId);
+$userId = "";
+$images = "";
+$login = 1;
+
+if (SessionController::isLoggedIn()) {
+    $userId = $_SESSION['user_id'];
+    $images = Image::getByUser($userId);
+    $login = 1;
+}else{
+    $login = 0;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,7 +42,8 @@ $images = Image::getByUser($userId);
 <body class="bg-light">
     <?php include '../components/navbar.php'; ?>
     
-    <div class="container-fluid py-4">
+    <?php if ($login == 1): ?>
+        <div class="container-fluid py-4">
         <div class="row">
             <!-- Main Content - Left Column -->
             <div class="col-md-8 mb-4">
@@ -132,6 +143,23 @@ $images = Image::getByUser($userId);
     </div>
 
     <script src="./js/1_photo.js"></script>
+    <?php else: ?>
+        <div class="container py-4">
+            <br class="mb-5">
+            <br class="mb-5">
+            <h2 class="text-center">Please log in to access this page</h2>
+            <p class="text-center">
+                <a href="login.php">Log In</a>
+            </p>
+            <br class="mb-5">
+            <br class="mb-5">
+            <br class="mb-5">
+            <br class="mb-5">
+            <br class="mb-5">
+            <br class="mb-5">
+        </div>
+    <?php endif; ?>
+
     <?php include '../components/footer.php'; ?>
 </body>
 </html>

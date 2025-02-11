@@ -7,7 +7,12 @@ class SessionController {
     }
 
     public static function isLoggedIn() {
-        return isset($_SESSION['user_id']);
+        try {
+            $retun = isset($_SESSION['user_id']);
+            return $retun;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
     public static function requireLogin() {

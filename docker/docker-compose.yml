@@ -68,7 +68,7 @@ services:
         while ! nc -z mysql 3306; do
           sleep 1
         done
-        echo 'MySQL está listo, ejecutando migraciones...'
+        echo 'MySQL is ready, running migrations...'
         php /var/www/camagru/src/config/migrate.php
       "
 

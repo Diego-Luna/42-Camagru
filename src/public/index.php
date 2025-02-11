@@ -43,11 +43,27 @@ $loggedIn = isset($_SESSION['user_id']);
     <h2 class="display-5 text-center mb-4">Gallery</h2>
     <!-- Grid of Images -->
     <div id="gallery-grid" class="row">
-      <?php foreach ($images as $img): ?>
-        <div class="col-12 col-md-6 col-lg-4 mb-4">
-          <?php include '../components/image_card.php'; ?>
+      <?php if (empty($images)): ?>
+        <div class="col-12 text-center">
+          <br class="mb-5">
+          <p class="lead">We hope you'll create something fantastic!</p>
+          <br class="mb-5">
+          <br class="mb-5">
+          <br class="mb-5">
+          <br class="mb-5">
+          <br class="mb-5">
+          <br class="mb-5">
+          <br class="mb-5">
+          <br class="mb-5">
+          <br class="mb-5">
         </div>
-      <?php endforeach; ?>
+      <?php else: ?>
+        <?php foreach ($images as $img): ?>
+          <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <?php include '../components/image_card.php'; ?>
+          </div>
+        <?php endforeach; ?>
+      <?php endif; ?>
     </div>
     <!-- Loading Indicator -->
     <div id="loading" class="d-none text-center my-3">
