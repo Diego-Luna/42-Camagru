@@ -19,27 +19,33 @@ $message = '';
 $action = $_GET['action'] ?? 'login';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['action'])) {
+    // Sanitizar y limpiar inputs
+    $username = trim(strip_tags(filter_input(INPUT_POST, 'username', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? ''));
+    $email = trim(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL) ?? '');
+    $password = trim(strip_tags(filter_input(INPUT_POST, 'password', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? ''));
+    $confirm_password = trim(strip_tags(filter_input(INPUT_POST, 'confirm_password', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? ''));
 
-    $username = filter_var(trim($_POST['username']), FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-    $email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
+    if (!preg_match('/^[a-zA-Z0-9_]{3,30}$/', $username)) {
+        $message = "Username must contain only letters, numbers, or underscores and be between 3 and 30 characters long.";
+    } else {
+        $controller = new AuthController();
 
-    $controller = new AuthController();
-    
-    if (isset($_POST['form_type']) && $_POST['form_type'] === 'register') {
-        $result = $controller->register(
-            $username,
-            $email,
-            $_POST['password'],
-            $_POST['confirm_password']
-        );
-        $message = isset($result['error']) ? $result['error'] : $result['success'];
-    } elseif (isset($_POST['form_type']) && $_POST['form_type'] === 'login') {
-        $res = $controller->login($username, $_POST['password']);
-        if (isset($res['error'])) {
-            $message = $res['error'];
-        } else {
-            header('Location: felicidades.php');
-            exit;
+        if (isset($_POST['form_type']) && $_POST['form_type'] === 'register') {
+            $result = $controller->register(
+                $username,
+                $email,
+                $password,
+                $confirm_password
+            );
+            $message = isset($result['error']) ? $result['error'] : $result['success'];
+        } elseif (isset($_POST['form_type']) && $_POST['form_type'] === 'login') {
+            $res = $controller->login($username, $password);
+            if (isset($res['error'])) {
+                $message = $res['error'];
+            } else {
+                header('Location: congratulations.php');
+                exit;
+            }
         }
     }
 }
