@@ -54,7 +54,7 @@ try {
 
     // 3. Comprobar que la ruta destino es válida y que se tienen permisos de escritura
     if (!is_writable($uploadDir)) {
-        throw new Exception('El directorio de subida no es escribible');
+        throw new Exception('El directorio de subida no es escribible : ' . $uploadDir);
     }
 
     // 4. Intentar mover el archivo
