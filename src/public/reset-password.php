@@ -6,14 +6,13 @@ SessionController::init();
 
 $message = '';
 
-$token = filter_input(INPUT_GET, 'token', FILTER_SANITIZE_STRING) ?? '';
+$token = filter_input(INPUT_GET, 'token', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $postToken = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_STRING);
-    $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
-    $confirmPassword = filter_input(INPUT_POST, 'confirm_password', FILTER_SANITIZE_STRING);
+    $postToken = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    $confirmPassword = filter_input(INPUT_POST, 'confirm_password', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     
-
     if (strlen($password) < 8 ||
         !preg_match('/[a-z]/', $password) ||
         !preg_match('/[A-Z]/', $password) ||
